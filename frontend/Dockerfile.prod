@@ -1,0 +1,38 @@
+# Dockerfile optimisé pour la production
+
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY package*.json ./
+
+# Installer les dépendances
+RUN npm ci --only=production
+
+# Copier le reste des fichiers
+COPY . .
+
+# Argument pour l'URL de l'API
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
+# Builder l'application
+RUN npm run build
+
+# Stage de production
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Installer serve pour servir l'application
+RUN npm install -g serve
+
+# Copier les fichiers buildés
+COPY --from=builder /app/dist /app/dist
+
+# Exposer le port
+EXPOSE 3000
+
+# Démarrer l'application avec serve
+CMD ["serve", "-s", "dist", "-l", "3000"]

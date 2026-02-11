@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/database:/app/database
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+    networks:
+      - wc-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    environment:
+      - VITE_API_URL=http://localhost:5001
+    depends_on:
+      - backend
+    networks:
+      - wc-network
+
+networks:
+  wc-network:
+    driver: bridge
